@@ -4,6 +4,15 @@ import FileUploader from "~/components/FileUploader";
 import {usePuterStore} from "~/lib/puter";
 import {useNavigate} from "react-router";
 import {convertPdfToImage} from "~/lib/pdfToImage";
+import {generateUUID} from "~/utils/utils";
+import {prepareInstructions} from "../../constans";
+
+interface handleAnalyze {
+    companyName: string,
+    jobTitle: string,
+    jobDescription: string,
+    file: File
+}
 
 const Upload = () => {
 
@@ -20,7 +29,7 @@ const Upload = () => {
 
     const handleAnalyze = async ({
                                      companyName, jobTitle, jobDescription, file
-                                 }: { companyName: string, jobTitle: string, jobDescription: string, file: File }) => {
+                                 }: handleAnalyze) => {
         setIsProcessing(true);
         setStatusText("Uploading file...");
 
@@ -35,6 +44,42 @@ const Upload = () => {
         const uploadedImage = await fs.upload([imageFile.file]);
 
         if (!uploadedImage) return setStatusText("failed to upload image!");
+
+        setStatusText("Preparing data...");
+
+        const uuid = generateUUID();
+        const data = {
+            id: uuid,
+            resumePath: uploadedFile.path,
+            uploadedImage: uploadedImage.path,
+            companyName,
+            jobTitle,
+            jobDescription,
+            feedback: ""
+        }
+
+        await kv.set(`resume:${uuid}`, JSON.stringify(data));
+
+        setStatusText("Analyzing...");
+
+        const feedback = await ai.feedback(
+            uploadedFile.path,
+            prepareInstructions({jobTitle, jobDescription})
+        )
+
+        if (!feedback) return setStatusText("Error:Failed to analyze resume!");
+
+        const feedbackText = typeof feedback.message.content === 'string'
+            ? feedback.message.content
+            : feedback.message.content[0].text;
+
+        data.feedback = JSON.stringify(feedbackText);
+        await kv.set(`resume:${uuid}`, JSON.stringify(data));
+
+        setStatusText("Analysis complete, redirecting...");
+
+        console.log(data);
+
 
     }
 
