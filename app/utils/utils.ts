@@ -28,3 +28,6 @@ export function formatSize(bytes: number): string {
         return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
     }
 }
+
+
+export const generateUUID = () => crypto.randomUUID();
