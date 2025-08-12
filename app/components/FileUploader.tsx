@@ -3,24 +3,27 @@ import {useDropzone} from "react-dropzone";
 import {formatSize} from "~/utils/format";
 
 interface FileUploaderProps {
+    file: File | null;
     onFileSelect?: (file: File | null) => void;
 }
 
-const FileUploader = ({onFileSelect}: FileUploaderProps) => {
+const FileUploader = ({file, onFileSelect}: FileUploaderProps) => {
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
-        const file = acceptedFiles[0] || null;
-        onFileSelect?.(file);
-    }, [])
+        const selected = acceptedFiles[0] || null;
+        onFileSelect?.(selected);
+    }, [onFileSelect])
+
+    const maxFileSize = 20 * 1024 * 1024; // 20MB in bytes
 
     const {getRootProps, getInputProps, isDragActive, acceptedFiles} = useDropzone({
         onDrop,
         multiple: false,
         accept: {"application/pdf": ['.pdf']},
-        maxSize: 20 * 1024 * 1024 // 20 MB
+        maxSize: maxFileSize
     })
 
-    const file = acceptedFiles[0] || null;
+    // const file = acceptedFiles[0] || null;
 
 
     return (
@@ -32,8 +35,8 @@ const FileUploader = ({onFileSelect}: FileUploaderProps) => {
 
 
                     {file ? (
-                        <div className="uploader-selected-file" onClick={(e) =>
-                            e.stopPropagation()}>
+                        <div className="uploader-selected-file"
+                             onClick={(e) => e.stopPropagation()}>
                             <img src="/images/pdf.png" alt="pdf" className="size-10"/>
                             <div className="flex items-center space-x-3">
                                 <div>
@@ -45,9 +48,13 @@ const FileUploader = ({onFileSelect}: FileUploaderProps) => {
                                     </p>
                                 </div>
                             </div>
-                            <button className="p2 cursor-pointer" onClick={(e) =>
-                                onFileSelect?.(null)}>
-                                <img src="/icons/cross.svg" alt="remove" className="w-4 h-4"/>
+                            <button className="p-2 cursor-pointer"
+                                    onClick={(e) => {
+                                        console.log(file)
+                                        e.stopPropagation() // avoid reopening the picker
+                                        onFileSelect?.(null)
+                                    }}>
+                                <img src="/icons/cross.svg" alt="remove" className="w-10 h-10"/>
                             </button>
                         </div>
                     ) : (

@@ -1,15 +1,43 @@
 import React, {type FormEvent, useState} from 'react'
 import Navbar from "~/components/Navbar";
 import FileUploader from "~/components/FileUploader";
+import {usePuterStore} from "~/lib/puter";
+import {useNavigate} from "react-router";
+import {convertPdfToImage} from "~/lib/pdfToImage";
 
 const Upload = () => {
+
+    const {auth, isLoading, fs, ai, kv} = usePuterStore()
+    const navigate = useNavigate();
     const [isProcessing, setIsProcessing] = useState(false);
     const [statusText, setStatusText] = useState("")
     const [file, setFile] = useState<File | null>(null)
 
     const handleFileSelect = (file: File | null) => {
+        console.log(file)
         setFile(file);
     }
+
+    const handleAnalyze = async ({
+                                     companyName, jobTitle, jobDescription, file
+                                 }: { companyName: string, jobTitle: string, jobDescription: string, file: File }) => {
+        setIsProcessing(true);
+        setStatusText("Uploading file...");
+
+        const uploadedFile = await fs.upload([file]);
+        if (!uploadedFile) return setStatusText("failed to upload file!");
+
+        setStatusText("Converting file to image...");
+        const imageFile = await convertPdfToImage(file);
+        if (!imageFile.file) return setStatusText("failed to convert pdf to image!");
+
+        setStatusText("Uploading image...");
+        const uploadedImage = await fs.upload([imageFile.file]);
+
+        if (!uploadedImage) return setStatusText("failed to upload image!");
+
+    }
+
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
 
         e.preventDefault();
@@ -17,11 +45,14 @@ const Upload = () => {
         if (!form) return;
         const formData = new FormData(form);
 
-        const companyName = formData.get('company-name');
-        const jobTitle = formData.get('job-title');
-        const jobDescription = formData.get('job-description');
+        const companyName = formData.get('company-name') as string;
+        const jobTitle = formData.get('job-title') as string;
+        const jobDescription = formData.get('job-description') as string;
 
-        console.log({companyName, jobTitle, jobDescription, file});
+        if (!file) return;
+
+        handleAnalyze({companyName, jobTitle, jobDescription, file})
+
     }
 
     return (
@@ -66,11 +97,8 @@ const Upload = () => {
                             </div>
 
                             <div className="form-div">
-                                <label htmlFor="uploader" className="form-label">
-                                    Upload Resume
-                                </label>
-                                <FileUploader onFileSelect={handleFileSelect}/>
-
+                                <label htmlFor="uploader">Upload Resume</label>
+                                <FileUploader file={file} onFileSelect={handleFileSelect}/>
                             </div>
 
                             <button className="primary-button" type="submit">
