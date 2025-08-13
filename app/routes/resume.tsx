@@ -16,7 +16,7 @@ const Resume = () => {
 
     const [imageUrl, setImageUrl] = useState("")
     const [resumeUrl, setResumeUrl] = useState("")
-    const [feedback, setFeedback] = useState<Feedback | null>("")
+    const [feedback, setFeedback] = useState<Feedback | null>(null)
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -44,7 +44,6 @@ const Resume = () => {
 
             setFeedback(data.feedback);
 
-            console.log({resumeUrl, imageUrl, feedback: data.feedback});
         }
 
         loadResume();
