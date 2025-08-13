@@ -1,3 +1,5 @@
+import {v4 as uuidv4} from 'uuid';
+
 export function formatSize(bytes: number): string {
     // Guard against invalid input
     if (!isFinite(bytes) || bytes <= 0) {
@@ -29,5 +31,4 @@ export function formatSize(bytes: number): string {
     }
 }
 
-
-export const generateUUID = () => crypto.randomUUID();
+export const generateUUID = () => uuidv4();
