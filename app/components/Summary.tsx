@@ -1,8 +1,49 @@
 import React from 'react'
+import ScoreGauge from "~/components/ScoreGauge";
+import ScoreBadge from "~/components/ScoreBadge";
 
-const Summary = () => {
+
+const Catagory = ({title, score}: { title: string, score: number }) => {
+    const textColor = score > 70
+        ? 'text-green-600'
+        : score > 49
+            ? 'text-yellow-600'
+            : 'text-red-600';
     return (
-        <div>Summary</div>
+        <div className="resume-summary">
+            <div className="category">
+                <div className="flex flex-row gap-2 items-center justify-center">
+                    <p className="text-2xl">{title}</p>
+                    <ScoreBadge label="Score" score={score} size="md"/>
+                </div>
+                <p className="text-2xl">
+                    <span className={textColor}>{score}/100</span>
+                </p>
+            </div>
+
+        </div>
+    )
+}
+
+const Summary = ({feedback}: { feedback: Feedback }) => {
+
+    return (
+        <div className="bg-white rounded-2xl shadow-md w-full">
+            <div className="flex flex-raw items-center p-4 gap-8">
+                <ScoreGauge score={feedback.overallScore}/>
+                <div className="flex flex-col gap-2">
+                    <h2 className="text-2xl font-bold">Your Resume Score</h2>
+                    <p className="text-sm text-gray-500">
+                        This score is calculated based on variables listed below
+                    </p>
+                </div>
+            </div>
+            <Catagory title="Tone & Style" score={feedback.toneAndStyle.score}/>
+            <Catagory title="Content" score={feedback.content.score}/>
+            <Catagory title="Structure" score={feedback.structure.score}/>
+            <Catagory title="Skills" score={feedback.skills.score}/>
+
+        </div>
     )
 }
 export default Summary
