@@ -7,8 +7,8 @@ import {useEffect, useState} from "react";
 
 export function meta({}: Route.MetaArgs) {
     return [
-        {title: "ResumAIze"},
-        {name: "description", content: "Your Resume Analyze by AI"},
+        {title: "ResumeAIze"},
+        {name: "description", content: "AI Resume Analyzer"},
     ];
 }
 
